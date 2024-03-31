@@ -20,7 +20,7 @@ const LearnPage = () => {
       </StickyWrapper>
       <FeedWrapper>
         <Header title="Spanish" />
-        <div className="h-[3000px] bg-red-400 w-full"></div>
+        {/* <div className="h-[3000px]  w-full"></div> */}
       </FeedWrapper>
     </div>
   );
