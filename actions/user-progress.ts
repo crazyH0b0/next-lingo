@@ -15,9 +15,10 @@ export const upsertUserProgress = async (courseId: number) => {
   if (!course) throw new Error('课程不存在');
   // if(!course.units.length || !course.units[0].lessons.length) throw new Error('课程为空')
   const existtingUserProgress = await getUserProgress();
+
   if (existtingUserProgress) {
     await db.update(userProgress).set({
-      activeCourseId: existtingUserProgress.activeCourseId,
+      activeCourseId: courseId,
       userName: user.firstName || '用户',
       userImageSrc: user.imageUrl || '/mascot.svg',
     });
