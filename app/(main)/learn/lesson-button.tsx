@@ -18,7 +18,8 @@ interface LessonButtonProps {
 
 const LessonButton = ({ id, index, totalCount, locked, current, percentage }: LessonButtonProps) => {
   const cycleLength = 8;
-  const cycleIndex = index % cycleLength;
+  // const cycleIndex = index % cycleLength;
+  const cycleIndex = index;
 
   let indentationLevel;
 
@@ -33,10 +34,11 @@ const LessonButton = ({ id, index, totalCount, locked, current, percentage }: Le
   }
 
   const rightPostion = indentationLevel * 40;
+  console.log({ cycleIndex, indentationLevel, rightPostion });
 
-  const isFirst = index === 0;
-  const isLast = index === totalCount;
-  const isCompleted = !current && !locked;
+  const isFirst = index === 0; // 判断是否为第一个按钮
+  const isLast = index === totalCount; // 判断是否为最后一个按钮
+  const isCompleted = !current && !locked; // 判断是否已完成
 
   const Icon = isCompleted ? Check : isLast ? Crown : Star;
 

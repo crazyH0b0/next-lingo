@@ -23,9 +23,9 @@ const Unit = ({ id, order, title, desc, lessons, activeLesson, activeLessonPerce
   return (
     <>
       <UnitBanner title={title} desc={desc} />
-      <div className="flex items-center flex-col relative">
+      <div className="flex items-center flex-col ">
         {lessons.map((lesson, index) => {
-          const isCurrent = true || lesson.id === activeLesson?.id;
+          const isCurrent = lesson.id === activeLesson?.id;
           // 锁定课程未完成或者不是当前课程
           const isLocked = !lesson.completed && !isCurrent;
           return (
