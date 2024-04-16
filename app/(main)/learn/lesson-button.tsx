@@ -18,23 +18,16 @@ interface LessonButtonProps {
 
 const LessonButton = ({ id, index, totalCount, locked, current, percentage }: LessonButtonProps) => {
   const cycleLength = 8;
-  // const cycleIndex = index % cycleLength;
-  const cycleIndex = index;
+  const cycleIndex = index % cycleLength;
 
   let indentationLevel;
 
-  if (cycleIndex <= 2) {
+  if (cycleIndex <= 3) {
     indentationLevel = cycleIndex;
-  } else if (cycleIndex <= 4) {
-    indentationLevel = 4 - cycleIndex;
-  } else if (cycleIndex <= 6) {
-    indentationLevel = 4 - cycleIndex;
   } else {
-    indentationLevel = cycleIndex - 8;
+    indentationLevel = cycleLength - cycleIndex;
   }
-
   const rightPostion = indentationLevel * 40;
-  console.log({ cycleIndex, indentationLevel, rightPostion });
 
   const isFirst = index === 0; // 判断是否为第一个按钮
   const isLast = index === totalCount; // 判断是否为最后一个按钮
