@@ -2,7 +2,6 @@ import db from './drizzle';
 import { eq } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs';
 import { courses, units, userProgress, challengeProgress, challenges, lessons } from './schema';
-import console from 'console';
 
 export const getCourses = async () => {
   const data = await db.query.courses.findMany();

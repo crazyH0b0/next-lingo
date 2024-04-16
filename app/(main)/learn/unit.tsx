@@ -25,6 +25,7 @@ const Unit = ({ id, order, title, desc, lessons, activeLesson, activeLessonPerce
       <UnitBanner title={title} desc={desc} />
       <div className="flex items-center flex-col ">
         {lessons.map((lesson, index) => {
+          // 数组中第一个未完成的课程就是当前应该高亮的课程
           const isCurrent = lesson.id === activeLesson?.id;
           // 锁定课程未完成或者不是当前课程
           const isLocked = !lesson.completed && !isCurrent;
