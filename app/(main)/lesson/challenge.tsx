@@ -31,8 +31,9 @@ const Challenge = ({ options, onSelect, status, type, selectedOption, disabled }
           imageSrc={option.imageSrc}
           shortcut={`${index + 1}`}
           onClick={() => onSelect(option.id)}
-          disabled={disabled}
+          disabled={false}
           type={type}
+          status={status}
         />
       ))}
     </div>
