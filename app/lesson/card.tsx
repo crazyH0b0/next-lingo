@@ -1,7 +1,10 @@
 import { challenges } from '@/db/schema';
 import { cn } from '@/lib/utils';
+import { text } from 'drizzle-orm/mysql-core';
 import Image from 'next/image';
+import { type } from 'os';
 import React from 'react';
+import { useAudio, useKey } from 'react-use';
 
 interface CardProps {
   id: number;
@@ -10,15 +13,28 @@ interface CardProps {
   text: string;
   shortcut: string;
   selected?: boolean;
-  onClick: () => void;
+  onClick: (id: number) => void;
   disabled?: boolean;
   status?: 'correct' | 'wrong' | 'none';
   type: (typeof challenges.$inferSelect)['type'];
 }
 
 const Card = ({ id, imageSrc, audioSrc, text, shortcut, selected, disabled, onClick, status, type }: CardProps) => {
+  const [audio, _, controls] = useAudio({
+    src: audioSrc || '',
+  });
+
+  const handleClick = React.useCallback(() => {
+    if (disabled) return;
+    onClick(id);
+    controls.play();
+  }, [disabled, onClick, controls]);
+
+  useKey(shortcut, handleClick, {}, [handleClick]);
+
   return (
     <div
+      onClick={handleClick}
       className={cn(
         'h-full  border-2 rounded-xl  border-b-4 hover:bg-black/5 p-4 lg:p-6 cursor-pointer active:border-b-2',
 
@@ -29,6 +45,7 @@ const Card = ({ id, imageSrc, audioSrc, text, shortcut, selected, disabled, onCl
         type === 'ASSIST' && 'lg:p-3 w-full'
       )}
     >
+      {audio}
       {imageSrc && (
         <div className="relative aspect-square mb-4 max-h-[80px] lg:max-h-[150px] w-full">
           <Image src={imageSrc} alt={text} fill className="" />
