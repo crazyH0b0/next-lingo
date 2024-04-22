@@ -35,11 +35,32 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
     setSelectedOption(id);
   };
 
-  const onCheck = () => {
-    const option = options.find((option) => option.id === selectedOption);
-    console.log({ anser: option?.correct });
+  const onNext = () => {
+    setActiveIndex(activeIndex + 1);
+  };
 
-    setStatus(option?.correct === true ? 'correct' : 'wrong');
+  const onContinue = () => {
+    if (!selectedOption) return;
+    // 答错了，重试逻辑
+    if (status === 'wrong') {
+      setStatus('none');
+      setSelectedOption(undefined);
+      return;
+    }
+    // 答对了，下一题逻辑
+    if (status === 'correct') {
+      onNext();
+      setStatus('none');
+      setSelectedOption(undefined);
+      return;
+    }
+    // 选完答案，点击确定的逻辑
+    const correctOption = options.find((option) => option.id === selectedOption);
+    if (!correctOption) return;
+    if (correctOption.id === selectedOption) {
+      setStatus(correctOption?.correct === true ? 'correct' : 'wrong');
+    } else {
+    }
   };
 
   return (
@@ -73,7 +94,7 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
           </div>
         </div>
       </div>
-      <Footer disabled={!selectedOption} status={status} onCheck={onCheck} />
+      <Footer disabled={!selectedOption} status={status} onCheck={onContinue} />
     </>
   );
 };
