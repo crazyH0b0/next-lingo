@@ -5,6 +5,9 @@ import Header from './header';
 import QuestionBubble from './question-bubble';
 import Challenge from './challenge';
 import Footer from './footer';
+import { upsertChallengeProgress } from '@/actions/challenge-progress';
+import { toast } from 'sonner';
+import { reduceHearts } from '@/actions/user-progress';
 
 interface QuizProps {
   initialPercentage: number;
@@ -17,8 +20,9 @@ interface QuizProps {
 }
 
 const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChallenges }: QuizProps) => {
+  const [isPending, startTransition] = React.useTransition();
   const [selectedOption, setSelectedOption] = React.useState<number>(); // 选中的卡片
-  const [hearts, setHears] = React.useState(initialHearts);
+  const [hearts, setHearts] = React.useState(initialHearts);
   const [percentage, setPercentage] = React.useState(initialPercentage);
   const [challenges] = React.useState(initialChallenges);
   const [activeIndex, setActiveIndex] = React.useState(() => {
@@ -39,6 +43,7 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
     setActiveIndex(activeIndex + 1);
   };
 
+  // 选完答案后点击的逻辑
   const onContinue = () => {
     if (!selectedOption) return;
     // 答错了，重试逻辑
@@ -54,12 +59,42 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
       setSelectedOption(undefined);
       return;
     }
-    // 选完答案，点击确定的逻辑
-    const correctOption = options.find((option) => option.id === selectedOption);
+
+    // 点击确定的逻辑
+    const correctOption = options.find((option) => option.correct);
     if (!correctOption) return;
     if (correctOption.id === selectedOption) {
-      setStatus(correctOption?.correct === true ? 'correct' : 'wrong');
+      startTransition(() => {
+        upsertChallengeProgress(challenge.id)
+          .then((response) => {
+            if (response?.error === 'hearts') {
+              return;
+            }
+            setStatus('correct');
+            setPercentage((prev) => prev + 100 / challenges.length);
+            // 如果是 100，则代表是练习
+            if (initialPercentage === 100) {
+              setHearts((prev) => Math.min(prev + 1, 5));
+            }
+          })
+          .catch(() => toast.error('出错了，请重试~'));
+      });
     } else {
+      startTransition(() => {
+        reduceHearts(challenge.id)
+          .then((response) => {
+            if (response?.error === 'hearts') {
+              return;
+            }
+
+            setStatus('wrong');
+
+            if (!response?.error) {
+              setHearts((prev) => Math.max(prev - 1, 0));
+            }
+          })
+          .catch(() => toast.error('出错了，请重试~'));
+      });
     }
   };
 
@@ -87,7 +122,7 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
                 onSelect={onSelect}
                 status={status}
                 selectedOption={selectedOption}
-                disabled={false}
+                disabled={isPending}
                 type={challenge.type}
               />
             </div>
