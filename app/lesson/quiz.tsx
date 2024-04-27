@@ -8,6 +8,11 @@ import Footer from './footer';
 import { upsertChallengeProgress } from '@/actions/challenge-progress';
 import { toast } from 'sonner';
 import { reduceHearts } from '@/actions/user-progress';
+import { useAudio, useWindowSize } from 'react-use';
+import Image from 'next/image';
+import ResultCard from './result-card';
+import { useRouter } from 'next/navigation';
+import Confetti from 'react-confetti';
 
 interface QuizProps {
   initialPercentage: number;
@@ -20,9 +25,17 @@ interface QuizProps {
 }
 
 const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChallenges }: QuizProps) => {
+  const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
+
+  const [correctAudio, _c, correctControls] = useAudio({ src: '/correct.wav' });
+  const [incorrectAudio, _i, incorrectControls] = useAudio({ src: '/incorrect.wav' });
+  const [finishAudio, _f, finishAudioControls] = useAudio({ src: '/finish.mp3', autoPlay: true });
+  const { width, height } = useWindowSize();
+
+  const [lessonId, setLessonId] = React.useState(initialLessonId); // 选中的卡片
   const [selectedOption, setSelectedOption] = React.useState<number>(); // 选中的卡片
-  const [hearts, setHearts] = React.useState(initialHearts);
+  const [hearts, setHearts] = React.useState(initialHearts); // 初始化 hearts
   const [percentage, setPercentage] = React.useState(initialPercentage);
   const [challenges] = React.useState(initialChallenges);
   const [activeIndex, setActiveIndex] = React.useState(() => {
@@ -32,6 +45,34 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
   const [status, setStatus] = React.useState<'correct' | 'wrong' | 'none'>('none');
   const challenge = challenges[activeIndex];
   const options = challenge?.challengeOptions ?? [];
+
+  if (!challenge) {
+    return (
+      <>
+        {finishAudio}
+        <Confetti recycle={false} numberOfPieces={500} tweenDuration={10000} width={width} height={height} />
+        <div className="mx-auto flex h-full max-w-2xl  flex-col items-center justify-center gap-y-4 text-center lg:gap-y-8">
+          <Image src="/finish.svg" alt="Finish" className="hidden lg:block" width={100} height={100} />
+          <Image src="/finish.svg" alt="Finish" className="block lg:hidden" width={50} height={50} />{' '}
+          <h1 className="text-xl lg:px-20 lg:text-3xl font-bold text-neutral-700">
+            恭喜! <br /> 你已完成该课程!
+          </h1>
+          <div className="flex items-center gap-x-4 w-full">
+            <ResultCard variant="points" value={challenges.length * 10} />
+            <ResultCard variant="hearts" value={hearts} />
+          </div>
+        </div>
+        <Footer
+          lessonId={lessonId}
+          status="completed"
+          onCheck={() => {
+            router.push('/learn');
+          }}
+        />
+      </>
+    );
+  }
+
   const title = challenge.type === 'ASSIST' ? '选择正常的词语' : challenge.question;
 
   const onSelect = (id: number) => {
@@ -70,8 +111,10 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
             if (response?.error === 'hearts') {
               return;
             }
+            correctControls.play();
             setStatus('correct');
             setPercentage((prev) => prev + 100 / challenges.length);
+
             // 如果是 100，则代表是练习
             if (initialPercentage === 100) {
               setHearts((prev) => Math.min(prev + 1, 5));
@@ -87,6 +130,7 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
               return;
             }
 
+            incorrectControls.play();
             setStatus('wrong');
 
             if (!response?.error) {
@@ -100,6 +144,8 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
 
   return (
     <>
+      {incorrectAudio}
+      {correctAudio}
       <Header hearts={hearts} percentage={percentage} />
       <div className="flex-1 ">
         <div className="h-full  flex items-center justify-center">

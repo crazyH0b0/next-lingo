@@ -1,8 +1,6 @@
 import { challenges } from '@/db/schema';
 import { cn } from '@/lib/utils';
-import { text } from 'drizzle-orm/mysql-core';
 import Image from 'next/image';
-import { type } from 'os';
 import React from 'react';
 import { useAudio, useKey } from 'react-use';
 
