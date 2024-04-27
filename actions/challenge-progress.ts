@@ -29,7 +29,7 @@ export const upsertChallengeProgress = async (challengeId: number) => {
   });
 
   const isPratice = !!existtingChallengeProgress;
-
+  // 生命值为 0 并且不是练习模式
   if (currentProgress.hearts === 0 && !isPratice) {
     return { error: 'hearts' };
   }

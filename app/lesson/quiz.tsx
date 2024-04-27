@@ -8,11 +8,13 @@ import Footer from './footer';
 import { upsertChallengeProgress } from '@/actions/challenge-progress';
 import { toast } from 'sonner';
 import { reduceHearts } from '@/actions/user-progress';
-import { useAudio, useWindowSize } from 'react-use';
+import { useAudio, useMount, useWindowSize } from 'react-use';
 import Image from 'next/image';
 import ResultCard from './result-card';
 import { useRouter } from 'next/navigation';
 import Confetti from 'react-confetti';
+import { useHeartsModal } from '@/store/use-hearts-modal';
+import { usePracticeModal } from '@/store/use-practice-modal';
 
 interface QuizProps {
   initialPercentage: number;
@@ -28,6 +30,13 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
 
+  const { open } = useHeartsModal();
+  const { open: openPracticeModal } = usePracticeModal();
+
+  useMount(() => {
+    if (initialPercentage === 100) openPracticeModal();
+  });
+
   const [correctAudio, _c, correctControls] = useAudio({ src: '/correct.wav' });
   const [incorrectAudio, _i, incorrectControls] = useAudio({ src: '/incorrect.wav' });
   const [finishAudio, _f, finishAudioControls] = useAudio({ src: '/finish.mp3', autoPlay: true });
@@ -36,7 +45,12 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
   const [lessonId, setLessonId] = React.useState(initialLessonId); // 选中的卡片
   const [selectedOption, setSelectedOption] = React.useState<number>(); // 选中的卡片
   const [hearts, setHearts] = React.useState(initialHearts); // 初始化 hearts
-  const [percentage, setPercentage] = React.useState(initialPercentage);
+
+  const [percentage, setPercentage] = React.useState(() => {
+    // 练习模式下自动清零课程进度条
+    return initialPercentage === 100 ? 0 : initialPercentage;
+  });
+
   const [challenges] = React.useState(initialChallenges);
   const [activeIndex, setActiveIndex] = React.useState(() => {
     const unCompletedIndex = challenges.findIndex((challenge) => !challenge.completed);
@@ -108,7 +122,9 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
       startTransition(() => {
         upsertChallengeProgress(challenge.id)
           .then((response) => {
+            // 生命值消耗完
             if (response?.error === 'hearts') {
+              open();
               return;
             }
             correctControls.play();
@@ -127,6 +143,7 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
         reduceHearts(challenge.id)
           .then((response) => {
             if (response?.error === 'hearts') {
+              open();
               return;
             }
 

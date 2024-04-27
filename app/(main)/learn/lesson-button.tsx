@@ -35,6 +35,7 @@ const LessonButton = ({ id, index, totalCount, locked, current, percentage }: Le
 
   const Icon = isCompleted ? Check : isLast ? Crown : Star;
 
+  // 根据是否完成自动进入相应课程
   const href = isCompleted ? `/lesson/${id}` : '/lesson';
 
   return (
