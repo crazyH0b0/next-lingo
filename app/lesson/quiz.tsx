@@ -53,9 +53,11 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
 
   const [challenges] = React.useState(initialChallenges);
   const [activeIndex, setActiveIndex] = React.useState(() => {
+    // 选择课程中第一个未完成的挑战
     const unCompletedIndex = challenges.findIndex((challenge) => !challenge.completed);
+    // 判断是否存在有未完成的选择题，如果没有则可能为 练习模式，返回第一个选择题
     return unCompletedIndex === -1 ? 0 : unCompletedIndex;
-  }); // 自动选择课程中第一个未完成的挑战
+  });
   const [status, setStatus] = React.useState<'correct' | 'wrong' | 'none'>('none');
   const challenge = challenges[activeIndex];
   const options = challenge?.challengeOptions ?? [];
@@ -98,15 +100,17 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
     setActiveIndex(activeIndex + 1);
   };
 
-  // 选完答案后点击的逻辑
+  // 选完答案后点击的逻辑。点击按钮只有 3 种状态：确定、重试，下一题
   const onContinue = () => {
     if (!selectedOption) return;
+
     // 答错了，重试逻辑
     if (status === 'wrong') {
       setStatus('none');
       setSelectedOption(undefined);
       return;
     }
+
     // 答对了，下一题逻辑
     if (status === 'correct') {
       onNext();
@@ -118,15 +122,18 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
     // 点击确定的逻辑
     const correctOption = options.find((option) => option.correct);
     if (!correctOption) return;
+    // 选项正确
     if (correctOption.id === selectedOption) {
       startTransition(() => {
         upsertChallengeProgress(challenge.id)
           .then((response) => {
+            // TODO: 验证是否可以去掉这段逻辑
             // 生命值消耗完
             if (response?.error === 'hearts') {
               open();
               return;
             }
+
             correctControls.play();
             setStatus('correct');
             setPercentage((prev) => prev + 100 / challenges.length);
@@ -150,6 +157,7 @@ const Quiz = ({ initialPercentage, initialHearts, initialLessonId, initialChalle
             incorrectControls.play();
             setStatus('wrong');
 
+            // 代表当前用户还有多余的生命值可以减少
             if (!response?.error) {
               setHearts((prev) => Math.max(prev - 1, 0));
             }

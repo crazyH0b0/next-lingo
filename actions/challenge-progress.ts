@@ -34,8 +34,9 @@ export const upsertChallengeProgress = async (challengeId: number) => {
     return { error: 'hearts' };
   }
 
-  // 当前用户是否在进行练习模式
+  // 当前用户在进行练习模式，则执行 update 逻辑
   if (isPratice) {
+    // TODO: 验证是否可以去掉这段逻辑
     await db
       .update(challengeProgress)
       .set({
@@ -60,6 +61,8 @@ export const upsertChallengeProgress = async (challengeId: number) => {
     revalidatePath(`/lesson/${lessonId}`);
     return;
   }
+
+  // 当前用户在非练习模式，则执行 insert 逻辑
   await db.insert(challengeProgress).values({
     challengeId,
     userId,

@@ -147,6 +147,7 @@ export const getLesson = async (id?: number) => {
     return null;
   }
 
+  // 对每个挑战进行归一化处理，额外返回带有 completed 的字段
   const normalizedChallenges = data.challenges.map((challenge) => {
     const completed =
       challenge.challengeProgress &&

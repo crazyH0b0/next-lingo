@@ -53,12 +53,14 @@ export const reduceHearts = async (challengeId: number) => {
     throw new Error('挑战不存在');
   }
 
+  // 判断当前挑战进度是否存在
   const existtingChallengeProgress = await db.query.challengeProgress.findFirst({
     where: and(eq(challengeProgress.userId, userId), eq(challengeProgress.challengeId, challengeId)),
   });
 
   const isPratice = !!existtingChallengeProgress;
 
+  // 练习模式不会消耗生命值
   if (isPratice) {
     return { error: 'practice' };
   }
@@ -66,10 +68,12 @@ export const reduceHearts = async (challengeId: number) => {
     throw new Error('用户进度不存在~');
   }
 
+  // 生命值为 0 直接返回
   if (currentUserProgress.hearts === 0) {
     return { error: 'hearts' };
   }
 
+  // 减少用户的生命值
   await db
     .update(userProgress)
     .set({
