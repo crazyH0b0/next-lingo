@@ -6,6 +6,7 @@ import UserProgress from '@/components/user-progress';
 import { getCourseProgress, getLessonPercentage, getUnits, getUserProgress } from '@/db/queries';
 import { redirect } from 'next/navigation';
 import Unit from './unit';
+import { Quests } from '@/components/quests';
 
 const LearnPage = async () => {
   const useProgressData = getUserProgress();
@@ -29,6 +30,7 @@ const LearnPage = async () => {
           points={userProgress.points}
           hasActiveDesc={false}
         />
+        <Quests points={userProgress.points} />
       </StickyWrapper>
       <FeedWrapper>
         <Header title={userProgress.activeCourse.title} />
